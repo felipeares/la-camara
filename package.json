@@ -4,7 +4,9 @@
   "description": "Predicción del voto de los Diputados en Chile",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "",
+	"start": "node index.js",
+	"deploy": "aws s3 sync ./www/dist/ s3://lacamara.cl/ --exclude '*.DS_Store'"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/felipeares/la-camara/issues"
   },
-  "homepage": "https://github.com/felipeares/la-camara#readme"
+  "homepage": "https://github.com/felipeares/la-camara#readme",
+  "devDependencies": {
+    "express": "^4.16.2"
+  }
 }
