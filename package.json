@@ -1,0 +1,19 @@
+{
+  "name": "la-camara",
+  "version": "1.0.0",
+  "description": "Predicción del voto de los Diputados en Chile",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felipeares/la-camara.git"
+  },
+  "author": "felipeares",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/felipeares/la-camara/issues"
+  },
+  "homepage": "https://github.com/felipeares/la-camara#readme"
+}
