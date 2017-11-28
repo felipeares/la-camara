@@ -1,0 +1,6 @@
+name,type,description,output 2010-2014,output 2014-2018,info,nodata 2010-2014,nodata 2014-2018
+prmid,String,Page id,no data - no file,diputados.oficios.1418,,no data - no file,
+nombre,String,Name and Lastname,no data - no file,diputados.oficios.1418,,no data - no file,
+periodo,String,Period,no data - no file,diputados.oficios.1418,,no data - no file,
+oficios,List,"Elements: Dictionary of  Diligences datanumberdatetosubjectdocument numberanswers number",no data - no file,diputados.oficios.1418,,no data - no file,
+errors,List,Elements: Pages with errors,no data - no file,diputados.oficios.1418,,no data - no file,
