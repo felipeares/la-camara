@@ -32,10 +32,10 @@ def getBlankFields2Degree(input_list, field, field2, validator = '', is_list = F
     print(str(round(100*count/len(input_list),2)) + '%')
     return returned_list
 
-loaded = json.load(open('./data/diputados.oficios.1418.json'))
+loaded = json.load(open('./data/sesiones.simple.1418.json'))
 
 #empty_fields = getBlankFields(loaded, 'comite_parlamentario')
-empty_fields = getBlankFields(loaded, 'oficios', validator = 0, is_list = True)
+empty_fields = getBlankFields(loaded, 'prmid', validator = 0, is_list = True)
 #empty_fields = getBlankFields2Degree(loaded, 'comisiones', 'permanentes', validator = 0, is_list = True)
 
 print(str(' '.join(map(str, empty_fields))))

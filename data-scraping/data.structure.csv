@@ -1,6 +1,5 @@
 name,type,description,output 2010-2014,output 2014-2018,info,nodata 2010-2014,nodata 2014-2018
-prmid,String,Page id,no data - no file,diputados.oficios.1418,,no data - no file,
-nombre,String,Name and Lastname,no data - no file,diputados.oficios.1418,,no data - no file,
-periodo,String,Period,no data - no file,diputados.oficios.1418,,no data - no file,
-oficios,List,"Elements: Dictionary of  Diligences datanumberdatetosubjectdocument numberanswers number",no data - no file,diputados.oficios.1418,,no data - no file,
-errors,List,Elements: Pages with errors,no data - no file,diputados.oficios.1418,,no data - no file,
+fecha,String,Date: 09 de Mar. de 2017,no data - no file,mociones.simple1418,,no data - no file,
+sesion,String,"Session: Sesi¢n 135¦ ordinaria, en jueves 09 de marzo de 2017, de 10:41 a 12:13 hrs.",no data - no file,mociones.simple1418,,no data - no file,
+estado,String,Celebrada / Cancelada / Citada,no data - no file,mociones.simple1418,,no data - no file,
+prmid,String,Args for link: prmID,no data - no file,mociones.simple1418,Link like: sesion_tabla.aspx?prmid=3558,no data - no file,

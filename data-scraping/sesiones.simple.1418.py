@@ -11,29 +11,13 @@ imp.reload(scraperhelper)
 scraperhelper.setOutputDescription(
         'Lista de todas las sesiones de la cámara de Diputados para el período 2014-2018',
         {
-                'type': 'List',
-                'elements': [
-                        {
-                                'type': 'String',
-                                'name': 'fecha',
-                                'description': ''
-                        },
-                        {
-                                'type': 'String',
-                                'name': 'sesion',
-                                'description': ''
-                        },
-                        {
-                                'type': 'String',
-                                'name': 'estado',
-                                'description': ''
-                        },
-                        {
-                                'type': 'String',
-                                'name': 'prmid',
-                                'description': ''
-                        }
-                ]
+            'type': 'Dictionary',
+            'elements': [
+                {'type': 'String', 'name': 'fecha', 'description': ''},
+                {'type': 'String', 'name': 'sesion', 'description': ''},
+                {'type': 'String', 'name': 'estado', 'description': ''},
+                {'type': 'String', 'name': 'prmid', 'description': ''}
+            ]
         }
 )
 
