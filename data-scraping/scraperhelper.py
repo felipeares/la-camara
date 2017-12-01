@@ -131,10 +131,67 @@ def initDisplay(height = 800, width = 1280):
     return display
 
 """
+Get the element in a specific tag. I does not exist return ''
+"""
+def getElementTextWithException(element_parent, tag):
+    try:
+        ret = element_parent.find_element_by_tag_name(tag).text
+    except NoSuchElementException:
+        ret = ''
+    except:
+        ret = ''
+    finally:
+        return ret
+    
+"""
+Get the element parameters by tag parent
+"""
+def getElementParamsForParentWithTag(element_parent, tag):
+    return getQueryParametersElementChild(element_parent.find_element_by_tag_name(tag))
+    
+"""
 Get the query parameters from a url
 """
 def getQueryParametersFromUrl(url):
     return query_regex.sub('',url).split('&')
+
+"""
+Get the query parameters from the first child <a> element
+"""
+def getQueryParametersElementChild(el):
+    try:
+        ret = getQueryParametersFromUrl(el.find_element_by_tag_name('a').get_attribute('href'))
+    except NoSuchElementException:
+        ret = ['','','','','']
+    except:
+        ret = ['','','','','']
+    finally:
+        return ret
+    
+"""
+Get the text of a element which contains a given text, excluding that given text
+"""
+def getRestOfTheTextForElementWith(parent_element, xpath, containing, exclude = True):
+    elements = parent_element.find_elements_by_xpath(xpath + "[.//*[contains(text(),'" + containing + "')]]");
+    if len(elements)>0:
+        if exclude:
+            return elements[0].text.replace(containing, '')
+        else:
+            return elements[0].text
+    else:
+        return ''
+    
+
+"""
+Get the element which contains a given text
+"""
+def getElementWithText(parent_element, xpath, containing):
+    elements = parent_element.find_elements_by_xpath(xpath + "[contains(text(),'" + containing + "')]");
+    if len(elements)>0:
+        return elements[0]
+    else:
+        return False
+
 
 """
 Save to file output and errors
