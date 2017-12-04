@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import NoSuchElementException
@@ -9,101 +11,125 @@ import scraperhelper
 imp.reload(scraperhelper)
 
 scraperhelper.setOutputDescription(
-        'Lista de todas las sesiones de la cámara de Diputados para el período 2014-2018',
+        'Detalle de todas votaciones para el período 2014-2018 (Reloaded)',
         {
-                'type': 'List',
-                'elements': [
-                        {
-                                'type': 'String',
-                                'name': 'fecha',
-                                'description': ''
-                        },
-                        {
-                                'type': 'String',
-                                'name': 'sesion',
-                                'description': ''
-                        },
-                        {
-                                'type': 'String',
-                                'name': 'estado',
-                                'description': ''
-                        },
-                        {
-                                'type': 'String',
-                                'name': 'prmid',
-                                'description': ''
-                        }
-                ]
+            'type': 'Dictionary',
+            'elements': [                
+                {'type': 'String','name': 'boletin','description': '' },
+                {'type': 'String','name': 'fecha','description': '' },
+                {'type': 'String','name': 'materia','description': '' },
+                {'type': 'String','name': 'articulo','description': '' },
+                {'type': 'String','name': 'sesion','description': '' },
+                {'type': 'String','name': 'tramite','resultado': '' },
+                {'type': 'String','name': 'tipo','description': '' },
+                {'type': 'String','name': 'quorum','description': '' },
+                {'type': 'String','name': 'resultado','description': '' },
+                {'type': 'List','name': 'favor','description': '' },
+                {'type': 'List','name': 'contra','description': '' },
+                {'type': 'List','name': 'abstencion','description': '' },
+                {'type': 'List','name': 'articulo_quinto','description': '' },
+                {'type': 'List','name': 'pareos','description': '' },
+            ]
         }
 )
 
 scraperhelper.setPrintTimeTo(True)
 browser = scraperhelper.initBrowser()
 
+# input file
+sessions_data = json.load(open('./data/sesiones.extended.1418.json'))
+scraperhelper.pt('Get sessions from file')
+
+# preload saved votacines_id
+votaciones_old = json.load(open('./data/votaciones.old.json'))
+votaciones_saved = []
+for vote in votaciones_old['data']:
+    votaciones_saved.append()
+
 # output lists
 data = []
 errors = []
 
 # main script GO!
-try:
-    browser.get('https://www.camara.cl/trabajamos/sala_sesiones.aspx')
-    scraperhelper.pt('Get First Site')
-    
-    option_selected = browser.find_element_by_css_selector('#ctl00_mainPlaceHolder_ddlLegislaturas option[selected]').get_attribute('value')
-    scraperhelper.pt('Get Handy Elements')
-    
-    while int(option_selected) > 45:   
-        scraperhelper.pt('Get year id: ' + str(option_selected) + ' ----------')
-        page_number = browser.find_element_by_css_selector('#detail .pages ul li.current').text
-        
-        subcount = 1
-        while True:
-            scraperhelper.pt('Get Sessions: Page ' + str(subcount))
-            subcount = subcount + 1
+counting = 0
+for session in sessions_data['data']:
+    for voting in session['votaciones']:
+        counting = counting + 1
+        saved = False
+        try:
+            # Go to 'Detale Votaciones'
+            browser.get('https://www.camara.cl/trabajamos/sala_votacion_detalle.aspx?prmId=' + voting['votacion_prmid'])
             
-            rows = browser.find_elements_by_css_selector('#detail table.tabla tbody tr')
-            for row in rows:
+            vote = {
+                "boletin": '',
+                "fecha": '',
+                "materia": '',
+                "articulo": '',
+                "sesion": '',
+                "tramite": '',
+                "tipo": '',
+                "quorum": '',
+                "resultado": '',
+                "favor": [],
+                "contra": [],
+                "abstencion": [],
+                "articulo_quinto": [],
+                "pareos": []
+            }
+            
+            
+            for el in browser.find_elements_by_css_selector('#detail .stress'):            
                 try:
-                    columns = row.find_elements_by_css_selector('td')
-                    prmid = scraperhelper.getQueryParametersFromUrl(columns[1].find_element_by_tag_name('a').get_attribute('href'))
-                    sesion = {
-                            "fecha":columns[0].text,
-                            "sesion":columns[1].text,
-                            "estado":columns[2].text,
-                            "prmid":prmid[0]
-                    }
-                    data.append(sesion)
-                except StaleElementReferenceException:
-                    print('ERROR!! -----')
+                    h2 = el.find_element_by_tag_name('h2').text
+                except NoSuchElementException as ex:
+                    h2 = 'SIN TITULO'
+                
+                if 'A favor' in h2:
+                    for a in el.find_elements_by_css_selector('#ctl00_mainPlaceHolder_dtlAFavor td a'):
+                        vote['favor'].append(scraperhelper.getQueryParametersFromUrl(a.get_attribute('href'))[0])
+                elif 'En contra' in h2:
+                    for a in el.find_elements_by_css_selector('#ctl00_mainPlaceHolder_dtlEncontra td a'):
+                        vote['contra'].append(scraperhelper.getQueryParametersFromUrl(a.get_attribute('href'))[0])
+                elif 'Abstención' in h2:
+                    for a in el.find_elements_by_css_selector('#ctl00_mainPlaceHolder_dtlAbstencion td a'):
+                        vote['abstencion'].append(scraperhelper.getQueryParametersFromUrl(a.get_attribute('href'))[0])
+                elif 'Artículo 5°' in h2:
+                    for a in el.find_elements_by_css_selector('table td a'):
+                        vote['articulo_quinto'].append(scraperhelper.getQueryParametersFromUrl(a.get_attribute('href'))[0])
+                elif 'Pareos' in h2:
+                    for a in el.find_elements_by_css_selector('#ctl00_mainPlaceHolder_dtlPareos td a'):
+                        vote['pareos'].append(scraperhelper.getQueryParametersFromUrl(a.get_attribute('href'))[0])
+                else:
+                    vote['boletin'] = h2.replace('Boletín ','')
+                    vote['fecha'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Fecha:').strip()
+                    vote['materia'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Materia:').strip()
+                    vote['articulo'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Artículo:').strip()
+                    vote['sesion'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Sesión:').strip()
+                    vote['tramite'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Trámite:').strip()
+                    vote['tipo'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Tipo de votació:').strip()
+                    vote['quorum'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Quorum:').strip()
+                    vote['resultado'] = scraperhelper.getRestOfTheTextForElementWith(el, './p', 'Resultado:').strip()
+                    if h2 == 'SIN TITULO':
+                        vote['materia'] = el.find_element_by_tag_name('h3').text
             
-            next_buttons = browser.find_elements_by_css_selector('#detail .pages ul li.next a')
-            if len(next_buttons) > 0:
-                browser.execute_script(next_buttons[0].get_attribute('href').replace('javascript:',''))
-                page_number = scraperhelper.waitForChangesInAttribute(browser, '#detail .pages ul li.current', page_number, text = True)
-            else:
-                break
-        
-        # Get next option
-        select = browser.find_element_by_id('ctl00_mainPlaceHolder_ddlLegislaturas')
-        for option in select.find_elements_by_tag_name('option'):
-            if int(option.get_attribute('value')) == int(option_selected) - 1:
-                option.click()
-                break
-        scraperhelper.pt('New option clicked')
-        
-        # Wait till loaded
-        option_selected = scraperhelper.waitForChangesInAttribute(browser, '#ctl00_mainPlaceHolder_ddlLegislaturas option[selected]', option_selected, attribute = 'value')
-        scraperhelper.pt('New page loaded')
+            data.append(vote)
+            saved = True
+                    
             
-    
-except TimeoutException as ex:
-    scraperhelper.pt('PAGE TimeoutException ERROR')
-except NoSuchElementException as ex:
-    scraperhelper.pt('PAGE NoSuchElementException ERROR')
-except StaleElementReferenceException as ex:
-    scraperhelper.pt('PAGE StaleElementReferenceException ERROR')
-except WebDriverException as ex:
-    scraperhelper.pt('PAGE WebDriverException ERROR')
+        except TimeoutException as ex:
+            scraperhelper.pt('PAGE TimeoutException ERROR')
+        except NoSuchElementException as ex:
+            scraperhelper.pt('PAGE NoSuchElementException ERROR')
+        except StaleElementReferenceException as ex:
+            scraperhelper.pt('PAGE StaleElementReferenceException ERROR')
+        except WebDriverException as ex:
+            scraperhelper.pt('PAGE WebDriverException ERROR')
+        
+        finally:
+            scraperhelper.pt('Loaded Voting ' + voting['votacion_prmid'])
+            if not saved:
+                errors.append(voting['votacion_prmid'])
+                print('----------- WITH ERROR! -------------')
 
 scraperhelper.closeSeleniumBrowser(browser)
-scraperhelper.saveToFile('sesiones.simple.1418', data, errors)
+scraperhelper.saveToFile('votaciones.extended.1418', data, errors)

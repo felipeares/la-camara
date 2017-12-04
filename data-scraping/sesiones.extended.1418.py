@@ -15,6 +15,10 @@ scraperhelper.setOutputDescription(
         {
             'type': 'Dictionary',
             'elements': [
+                {'type': 'String','name': 'fecha','description': '' },
+                {'type': 'String','name': 'sesion','description': '' },
+                {'type': 'String','name': 'estado','description': '' },
+                {'type': 'String','name': 'prmid','description': '' },
                 {
                     'type': 'Dictionary','name': 'ordenes', 'description': '', 
                     'elements': [

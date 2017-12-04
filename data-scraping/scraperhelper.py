@@ -169,6 +169,14 @@ def getQueryParametersElementChild(el):
         return ret
     
 """
+Get the link href from the first child <a> element
+"""
+def getLinkFromElementChild(el):
+    for a in el.find_elements_by_tag_name('a'):
+        return a.get_attribute('href')
+    return ''
+    
+"""
 Get the text of a element which contains a given text, excluding that given text
 """
 def getRestOfTheTextForElementWith(parent_element, xpath, containing, exclude = True):
@@ -211,3 +219,12 @@ def saveToFile(name, output_data, errors = []):
     with open('data/errors/' + name + '.json', 'w') as outfile:
         json.dump(errors, outfile)
     if print_times: pt('saveToFile')
+    
+"""
+Get a List of indexes saved
+"""
+def getSavedIndexes(saved, index_name):
+    out = []
+    for d in saved:
+        out.append(d[index_name])
+    return out
