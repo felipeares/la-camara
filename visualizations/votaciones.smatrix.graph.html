@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="felipeares">
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+		<title>TEST01</title>
+		
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+		<style>
+
+		body {
+			width:100%;
+			padding:20px;
+			text-align:center;
+		}
+		
+		.links line {
+		  stroke: #999;
+		  stroke-opacity: 0.6;
+		}
+
+		.nodes circle {
+		  stroke: #fff;
+		  stroke-width: 1.5px;
+		}
+		
+		
+		svg#graph {
+			border: #CCC 1px solid;
+		}
+		
+		
+	  	circle.cell-hover {
+        	stroke: #F00;
+        	stroke-width:0.3px;   
+      	}
+
+      	text.mono {
+        	font-size: 9pt;
+        	font-family: Consolas, courier;
+        	fill: #aaa;
+      	}
+
+      	text.text-selected {
+        	fill: #000;
+      	}
+
+      	text.text-highlight {
+       	 	fill: #c00;
+      	}
+      	text.text-hover {
+        	fill: #00C;
+      	}
+      	#tooltip {
+	        position: absolute;
+	        width: 200px;
+	        height: auto;
+	        padding: 10px;
+	        background-color: white;
+	        -webkit-border-radius: 10px;
+	        -moz-border-radius: 10px;
+	        border-radius: 10px;
+	        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        pointer-events: none;
+      	}
+
+      	#tooltip.hidden {
+        	display: none;
+      	}
+
+      	#tooltip p {
+        	margin: 0;
+        	font-family: sans-serif;
+        	font-size: 12px;
+        	line-height: 20px;
+      	}
+
+		</style>
+	</head>
+	<body>
+		<div id="tooltip" class="hidden">
+			<p><span id="value"></p>
+		</div>
+		<svg id="graph" width="1050" height="525"></svg>
+		
+		<script
+		  src="https://code.jquery.com/jquery-3.2.1.min.js"
+		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+		  crossorigin="anonymous"></script>
+		<script 
+		  src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" 
+		  integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" 
+		  crossorigin="anonymous"></script>
+		
+		<script 
+		  src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" 
+		  integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" 
+		  crossorigin="anonymous"></script>
+			
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script>
+			
+		var svg = d3.select("svg"),
+		    width = +svg.attr("width"),
+		    height = +svg.attr("height"),
+			radius = 12;
+
+		var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+		var simulation = d3.forceSimulation()
+		    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+			.force("charge", d3.forceManyBody())
+			.force("collide", d3.forceCollide(radius))
+			.force("force_top", d3.forceY().strength(0.08))
+			.force("force_bottom", d3.forceY(height).strength(0.08))
+		    .force("center", d3.forceCenter(width / 2, height / 2));
+
+		d3.json("./data/graph.votaciones.json", function(error, graph) {
+		  if (error) throw error;
+
+		  var link = svg.append("g")
+		      .attr("class", "links")
+		      .selectAll("line")
+		      .data(graph.links)
+		      .enter().append("line")
+		      .attr("stroke-width", function(d) { return calcWeight(d.value); });
+
+		  var node = svg.append("g")
+		      .attr("class", "nodes")
+		      .selectAll("circle")
+		      .data(graph.nodes)
+		      .enter().append("circle")
+		      .attr("r", radius)
+		      .attr("fill", function(d) { return color(d.group); })
+			  .on("mouseover", function(d){
+				  //Update the tooltip position and value
+				  d3.select("#tooltip")
+				  	.style("left", (d3.event.pageX+10) + "px")
+				  	.style("top", (d3.event.pageY-10) + "px")
+				  	.select("#value")
+				  	.html(d.nombre + "<br>" + d.partido);  
+					//Show the tooltip
+				  	d3.select("#tooltip").classed("hidden", false);
+			  })
+			  .on("mouseout", function(){
+				  	d3.select(this).classed("cell-hover",false);
+				  	d3.select("#tooltip").classed("hidden", true);
+			  })
+		      .call(d3.drag()
+		          .on("start", dragstarted)
+		          .on("drag", dragged)
+		          .on("end", dragended));
+
+		  simulation
+		      .nodes(graph.nodes)
+		      .on("tick", ticked);
+		  
+		  simulation.force("link")
+		      .links(graph.links)
+			  .distance(function(link) { return radius*10/Math.max(0.1,Math.abs(link.value)); })
+ 			  .strength(function(link) { return calcForceVal(link.value); });
+			  
+		  
+
+		  function ticked() {
+			link
+		        .attr("x1", function(d) { return d.source.x; })
+		        .attr("y1", function(d) { return d.source.y; })
+		        .attr("x2", function(d) { return d.target.x; })
+		        .attr("y2", function(d) { return d.target.y; });
+
+		    node
+		        .attr("cx", function(d) { return d.x; })
+		        .attr("cy", function(d) { return d.y; });
+		  }
+		});
+
+		function dragstarted(d) {
+		  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+		  d.fx = d.x;
+		  d.fy = d.y;
+		}
+
+		function dragged(d) {
+		  d.fx = d3.event.x;
+		  d.fy = d3.event.y;
+		}
+
+		function dragended(d) {
+		  if (!d3.event.active) simulation.alphaTarget(0);
+		  d.fx = null;
+		  d.fy = null;
+		}
+		
+		var threshold = 0.9;
+		var threshold_min = 0.1;
+		function calcWeight(val) {
+			if (val > threshold) return val;
+			if (val < threshold_min) return 0;
+			return val/10;
+		}
+		
+		function calcForceVal(val) {
+			if (val < threshold_min) return 0
+			return val;
+		}
+
+		</script>
+	</body>
+</html>

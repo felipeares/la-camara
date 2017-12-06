@@ -78,7 +78,7 @@ for res in resoluciones['data']:
             }
             
             # Go to 'Proyectos de Ley'
-            browser.get('https://www.camara.cl/trabajamos/pacuerdo_detalle.aspx?prmid=' + res['prmid'])
+            browser.get('https://www.camara.cl/trabajamos/presolucion_detalle.aspx?prmID=' + res['prmid'])
              
             try:
                 ac['titulo'] = browser.find_element_by_css_selector('h3.caption').text
@@ -132,7 +132,7 @@ for res in resoluciones['data']:
             scraperhelper.pt('PAGE WebDriverException ERROR')
         
         finally:
-            scraperhelper.pt('Loaded Agreenment ' + res['prmid'] + ' ' + str(counting) + '/' + str(all_count))
+            scraperhelper.pt('Loaded Resolution ' + res['prmid'] + ' ' + str(counting) + '/' + str(all_count))
             if not saved:
                 errors.append(res['prmid'])
                 print('----------- WITH ERROR! -------------')
