@@ -58,6 +58,7 @@ clusters = 10
 kmeans = KMeans(n_clusters=clusters, random_state=0).fit(votes_matrix)
 predictions = kmeans.predict(votes_matrix)
 clusters_list = []
+clusters_partidos = []
 for i in range(0,clusters):
     print('------ CLUSTER Nº ' + str(i) + ' -----------')
     cluster_prmids = []
@@ -75,6 +76,7 @@ for i in range(0,clusters):
     
     clusters_list.append(cluster_prmids)
     
+    clusters_partidos.append(partidos_sum)
     for key in partidos_sum:
         print(str(key) + ': ' + str(partidos_sum[key]))
         if key == 'Unión Demócrata Independiente':
@@ -95,6 +97,7 @@ while True:
         if distances_to_ultra_right[dist_index-1] > distances_to_ultra_right[dist_index]:
             distances_to_ultra_right[dist_index], distances_to_ultra_right[dist_index-1] = distances_to_ultra_right[dist_index-1], distances_to_ultra_right[dist_index]
             clusters_list[dist_index], clusters_list[dist_index-1] = clusters_list[dist_index-1], clusters_list[dist_index]
+            clusters_partidos[dist_index], clusters_partidos[dist_index-1] = clusters_partidos[dist_index-1], clusters_partidos[dist_index]
             centers[dist_index], centers[dist_index-1] = centers[dist_index-1], centers[dist_index].copy()
             changes = True
     
@@ -130,10 +133,10 @@ max_distance = max_distance = max(max_distance, np.max(clusters_center_distance_
 
 for c in range(0,clusters):
     # Create the cluster node 
-    graph_json["nodes"].append({"id": ('c'+str(c)), "group": c, "n": 'Cluster '+str(c), "is_c": True})
+    graph_json["nodes"].append({"id": ('c'+str(c)), "group": c, "n": 'Bloque '+str(c+1), "is_c": True, "p":clusters_partidos[c]})
     for i in range(0,len(clusters_list[c])):
         # Create the rep node
-        graph_json["nodes"].append({"id": clusters_list[c][i], "group": c, "n":  diputados_info[clusters_list[c][i]]['nombre'], "is_c": False})
+        graph_json["nodes"].append({"id": clusters_list[c][i], "group": c, "n":  diputados_info[clusters_list[c][i]]['nombre'], "is_c": False, "p":diputados_info[clusters_list[c][i]]['comite_parlamentario']})
         # Create the link
         graph_json["links"].append({"source": ('c'+str(c)), "target": clusters_list[c][i], "value": round(clusters_center_ditance[c][i]/max_distance, 2), "is_c_to_c": False})
     

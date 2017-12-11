@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="felipeares">
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+		<title>Votaciones Matrix</title>
+	    
+		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+		<style>
+
+		body {
+			background-color: #ffffff;
+			background-image: url("https://www.transparenttextures.com/patterns/clean-textile.png");
+		}
+		
+		.description-container {
+			background:#eceeef;
+		}
+		
+		#cluster-graph-container, #cluster-graph-container iframe {
+			height:600px; 
+			border:none; 
+			padding:0; 
+			margin:0;
+		}
+		
+		#cluster-graph-container {
+	        -webkit-border-radius: 10px;
+	        -moz-border-radius: 10px;
+	        background-image: url("https://www.transparenttextures.com/patterns/clean-textile.png");
+		}
+		
+		#felipe-info {
+			padding-left: 0px;
+		}
+		
+		#felipe-info li {
+			list-style: none;
+		}
+		
+		#felipe-info li i {
+			font-size: 34px;
+			color: #000;
+		}
+		
+		#felipe-info li a {
+			color: #555;
+		    position: relative;
+		    top: -7px;
+			left: 5px;
+			font-weight:100;
+		}
+		
+      	#tooltip {
+	        position: absolute;
+	        width: 340px;
+	        height: auto;
+	        padding: 10px;
+	        background-color: white;
+	        -webkit-border-radius: 10px;
+	        -moz-border-radius: 10px;
+	        border-radius: 10px;
+	        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        pointer-events: none;
+      	}
+
+      	#tooltip.hidden {
+        	display: none;
+      	}
+		
+		#tooltip .reps {
+			float:left;
+			width:210px;
+		}
+		#tooltip .rep {
+			border-left:solid 5px red;
+			margin-bottom:20px;
+			padding-left:5px;
+		}
+		#tooltip .rep p {
+			margin:0px;
+			color:#555;
+		}
+		#tooltip .rep span {
+			font-size: 12px;
+			color: #CCC;
+			line-height: 14px;
+			display: block;
+		}
+		#tooltip .rep span.bloc{
+			font-weight:bold;
+		}
+		#tooltip .simil {
+			float:left;
+			width:110px;
+			text-align:center;
+			margin-top:0px;
+		}
+		#tooltip .simil .speed {
+			width:80px;
+			height:80px;
+			border: 5px solid green;
+	        -webkit-border-radius: 160px;
+	        -moz-border-radius: 160px;
+	        border-radius: 160px;
+			text-align:center;
+			margin: auto;
+			font-size: 24px;
+			color: green;
+			padding-top: 16px;
+	        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+		}
+		
+		#tooltip .simil .speed p {
+			margin:0px;
+			line-height: 24px;
+		}
+		
+		#tooltip .simil .speed span {
+			font-size:12px;
+			display:block;
+		}
+		
+		#squareTip {
+	        position: absolute;
+	        width: 20px;
+	        height: 20px;
+	        padding: 0px;
+	        background-color: white;
+	        -webkit-border-radius: 20px;
+	        -moz-border-radius: 20px;
+	        border-radius: 20px;
+	        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	        pointer-events: none;
+			border: 2px solid white;
+		}
+		
+      	#squareTip.hidden {
+        	display: none;
+      	}
+		
+		text.rowLabel, text.columnLabel {
+		    font: 4px Verdana, Helvetica, Arial, sans-serif;
+			fill: #555;
+		}
+		
+		text.selected {
+			fill: red;
+			font: 6px Verdana, Helvetica, Arial, sans-serif;;
+		}
+
+		rect.heatSquare {
+			cursor:pointer;
+		}
+
+		
+		.loader {
+			color: #28bb9c;
+			margin: 110px auto;
+			position: relative;
+			font-size: 220px;
+			text-align: center;
+		}
+		
+		</style>
+	</head>
+	<body>
+		<div class="container-fluid main">
+			<div class="row">
+				<div class="col-sm-8" style="overflow: auto;">
+					<div class="graph-container">
+						<div id="tooltip" class="hidden">
+							<div class="reps">
+								<div id="rep_1" class="rep">
+									<p></p>
+									<span class="par"></span>
+									<span class="bloc"></span>
+								</div>
+								<div id="rep_2" class="rep">
+									<p></p>
+									<span class="par"></span>
+									<span class="bloc"></span>
+								</div>
+							</div>
+							<div class="simil">
+								<div class="speed">
+									<p id="match"></p>
+									<span>match</span>
+								</div>
+							</div>
+						</div>
+						<div id="squareTip" class="hidden"></div>
+						<div id="chart">
+							<div id="prev-loader" class="loader"><i class="fa fa-cogs" aria-hidden="true"></i></div>
+						</div>
+					</div>
+					
+				</div>
+				<div class="col-sm-4">
+					<div class="description-container">
+						<div class="jumbotron">
+						  <h1 class="display-3">¡Hola!</h1>
+						  <p class="lead">
+						  	La siguiente matriz da cuenta de que tan parecido votan los diputados de Chile. Entre más "oscurecido" esté el color de la celda entre dos diputados más parecidos son.
+							Pasa el puntero para ver mas información
+						  </p>
+						  <hr class="my-4">
+						  <p>El cálculo se realizó analizando un total de 4.175 votaciones entre el año 2014 y 2018. Se dejaron fuera todas aquellas votaciones en las cuales todos los diputados asistentes votaron a favor</p>
+						  <p class="lead">
+							<a href="javascript:" data-toggle="modal" data-target="#bloquesModal" class="btn btn-outline-info btn-block" role="button" onClick="loadClusters()">
+								Bloques de Diputados
+							</a>
+						    <a href="javascript:" data-toggle="modal" data-target="#comoModal" class="btn btn-outline-info btn-block" role="button">
+								¿Cómo se armó?
+							</a>
+						    <a href="javascript:" data-toggle="modal" data-target="#contactoModal" class="btn btn-outline-info btn-block" role="button">
+								Contacto
+							</a>
+						    <a href="https://github.com/felipeares/la-camara" class="btn btn-outline-info btn-block" role="button">
+								<i class="fa fa-github" aria-hidden="true"></i> Código en GitHub
+							</a>
+						  </p>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			<!-- Bloques Modal -->
+			<div class="modal fade" id="bloquesModal" tabindex="-1" role="dialog" aria-labelledby="bloquesModalTitle" aria-hidden="true">
+			  <div class="modal-dialog modal-lg" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="exampleModalLongTitle">¿Cómo están ordenados los Bloques?</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			        <p>
+						Los bloques se ordenaron intentando juntar a aquellos diputados mas similares unos con otros. 
+						No necesariamente quedaron en cada bloque diputados del mismo partido. 
+						A continuación te dejamos el detalle de la composición de cada uno.
+						Pasa el puntero por los círculos para que partidos o que diputados lo componen.
+					</p>
+					<div id="cluster-graph-container"></div>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			
+			<!-- HowTo Modal -->
+			<div class="modal fade" id="comoModal" tabindex="-1" role="dialog" aria-labelledby="comoModalTitle" aria-hidden="true">
+			  <div class="modal-dialog modal-lg" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="exampleModalLongTitle">¿Cómo se armó?</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			        <div class="row">
+						<div class="col-sm-12">
+							<h3>Obtención de Datos</h3>
+							<p>
+								Los datos se obtuvieron construyendo un "Crawler" que se dedicó durante un poco mas de 5 horas a obtener absolutamente TODOS los datos de la página web pública de la cámara de diputados (https://www.camara.cl/.)
+								Finalmente se logró descargar el detalle del voto de cada diputado de 4.175 votaciones durante el período 2014-2018. Puedes ver el código de los "scrapers" en el repositorio abierto vinculado al inicio de esta página.
+							</p>
+						</div>
+					</div>
+			        <div class="row">
+						<div class="col-sm-12">
+							<h3>Construcción de la Matriz</h3>
+							<p>
+								Se construyó un algoritmo que fué sumando en una matriz de 120X120 (número de diputados) +1 cada vez que un diputado i votara exactamente igual que un diputado j.
+								Además se castigaba dicha celda con -1 si es que el diputado i votó a favor y el diputado j en contra (O vice versa).
+								Con esto quedamos con una mariz con muchos números.
+							</p>
+						</div>
+					</div>
+			        <div class="row">
+						<div class="col-sm-12">
+							<h3>Suavización y Orden</h3>
+							<p>
+								Finalmente se suavizó la matriz por columna con una función lineal que dejará en uno el máximos de la columna.
+								Para ordenar la matriz primero se realizó un proceso de "K-Means" para encontrar clusters de similitud entre los diputados.
+							</p>
+						</div>
+					</div>
+			        <div class="row">
+						<div class="col-sm-12">
+							<h3>Principales Librerías Utilizadas</h3>
+							<p>
+								Se utilizaron las siguientes librerías en el desarrollo de la Matriz
+							</p>
+							<ul>
+								<li><h4>Web Scraping</h4></li>
+								<li>Selenium (Python)</li>
+								
+								<li><h4 style="margin-top:10px;">Data Analytics</h4></li>
+								<li>Numpy (Python)</li>
+								<li>sklearn (Python)</li>
+								<li>matplotlib (Python)</li>
+								
+								<li><h4 style="margin-top:10px;">Visualización</h4></li>
+								<li>D3.js (Javascript)</li>
+								
+								<li><h4 style="margin-top:10px;">Página Web</h4></li>
+								<li>Bootstrap (CSS + Javascript)</li>
+								<li>JQuery (Javascript)</li>
+								<li>Font Awesome (CSS)</li>
+							</ul>
+						</div>
+					</div>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			
+			<!-- Contact Modal -->
+			<div class="modal fade" id="contactoModal" tabindex="-1" role="dialog" aria-labelledby="contactoModalTitle" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="exampleModalLongTitle"><i class="fa fa-paper-plane-o" aria-hidden="true"></i> Contacto</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+		            <p>Si tienes alguna idea de otros proyectos que pudiésemos hacer con esta información, o te interesaría obtener la base de datos que estamos generando o simplemente quieres conversar envíame un correo a <strong>felipeares.work<i class="fa fa-at"></i>gmail<i class="fa fa-dot">.</i>com</strong></p>
+					<p>Estoy buscando nuevas ideas/proyectos que podamos hacer levantando información de la web (Scraping), construyendo modelos analíticos/predictivos y visualizándolos de manera simple e interactiva.</p>
+					<ul id="felipe-info">
+						<li><i class="fa fa-github-square"></i> <a href="https://github.com/felipeares">github.com/felipeares</a></li>
+						<li><i class="fa fa-linkedin-square"></i> <a href="https://www.linkedin.com/in/felipeares/">linkedin.com/in/felipeares/</a></li>
+					</ul>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+						
+		</div>
+		
+		<script
+		  src="https://code.jquery.com/jquery-3.2.1.min.js"
+		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+		  crossorigin="anonymous"></script>
+		<script 
+		  src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" 
+		  integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" 
+		  crossorigin="anonymous"></script>
+		<script 
+		  src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" 
+		  integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" 
+		  crossorigin="anonymous"></script>
+		
+		
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script>
+		var numReps = 120,
+			cellSize = 5,
+			textLength = 75,
+			text_span = cellSize/4,
+			clusterRect = cellSize*2,
+			squareTipSize = 20,
+			toolTipSize = 340,
+			margin = { top: 1, right: 1, bottom: 1, left: 1 },
+		    width = textLength + (numReps+1)*cellSize + squareTipSize,
+		    height = width + squareTipSize,
+			clusterColors = ['#A0A4B8','#A3C4BC','#8DD17F','#7293A0','#AEDCC0','#D7B29D','#CB8589','#E8D2AE','#B5C2B7','#8C93A8'],
+			reps = [],
+			repsColors = [],
+			repsInfo = [];
+		
+		d3.select(".description-container").style("height",height + "px");
+		
+		var svg = d3.select("#chart").append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
+		d3.json("./data/graph.votaciones.json", function(error, graph) {
+			  if (error) throw error;
+			  
+			  $('#prev-loader').hide();
+			  
+			  var colorGroup = d3.scaleOrdinal(clusterColors);
+			  
+			  var colorScale = function(row,column,val) {
+				  if (repsColors[row] === repsColors[column]) return d3.scaleLinear().domain([0, 1]).range(["#fff",repsColors[row]])(val);
+				  //return d3.scaleLinear().domain([0, 1]).range(["#fff","#ddd"])(val); 
+				  return d3.scalePow().domain([0, 1]).range(["#fff",d3.interpolateLab(repsColors[row], repsColors[column])(0.5)])(val);
+			  }
+			  
+			  var showToolTip = function(d) {
+				  				  
+				  var index_source = reps.indexOf(d.source),
+				  	source = repsInfo[index_source],
+				  	index_target = reps.indexOf(d.target),
+				  	target = repsInfo[index_target],
+				  	color_source = repsColors[index_source],
+				    color_target = repsColors[index_target],
+				    tool_pos_x = ((d3.event.pageX > width - toolTipSize) ? (d3.event.pageX - toolTipSize - squareTipSize) : (d3.event.pageX + squareTipSize)),
+				    tool_pos_y = ((d3.event.pageY > height - toolTipSize) ? (d3.event.pageY - toolTipSize/2) : (d3.event.pageY - squareTipSize)),
+				    match_color = d3.scaleLinear().domain([0, 1]).range(["red","green"])(d.value);
+				  
+				  var selection = d3.select("#tooltip")
+				  					.style("left", tool_pos_x + "px")
+				  					.style("top", tool_pos_y + "px");
+				  
+				  selection.select("#rep_1").style("border-color",color_source);
+				  selection.select("#rep_1 p").html(source.nombre);  
+				  selection.select("#rep_1 span.par").html(source.partido);  
+				  selection.select("#rep_1 span.bloc").style("color",color_source).html("Bloque " + (source.group + 1));  
+				  
+				  selection.select("#rep_2").style("border-color",color_target);
+				  selection.select("#rep_2 p").html(target.nombre);  
+				  selection.select("#rep_2 span.par").html(target.partido); 
+				  selection.select("#rep_2 span.bloc").style("color",color_target).html("Bloque " + (target.group + 1));  
+				  
+				  selection.select(".speed").style("color",match_color).style("border-color",match_color); 
+				  selection.select("#match").html(Math.round(100*d.value) + "%"); 
+				  
+				  selection.classed("hidden", false);
+				  
+				  d3.select("#squareTip")
+				  	.style("left", (d3.event.pageX) - squareTipSize/2 + "px")
+				  	.style("top", (d3.event.pageY) - squareTipSize/2 + "px")
+				  	.style("background-color", colorScale(index_target, index_source, d.value))
+				  	.classed("hidden", false);				  
+			  }
+			  
+			  for (var i = 0; i < graph.nodes.length; i++ ) {
+				  reps.push(graph.nodes[i].id);
+				  repsColors.push(colorGroup(graph.nodes[i].group));
+				  repsInfo.push(graph.nodes[i])
+			  }
+			  
+			  var rowLabels = svg.append("g")
+		      	.selectAll(".rowLabel")
+		      	.data(graph.nodes)
+		      	.enter()
+		      	.append("text")
+		      	.text(function (d) { return d.nombre; })
+		      	.attr("x", textLength)
+		      	.attr("y", function (d, i) { return text_span*2 + clusterRect + textLength + text_span + cellSize*1.5  + (i) * cellSize; })
+		      	.style("text-anchor", "end")
+			  	.attr("class", function (d,i) { return "rowLabel mono r" + i + " rowId_" + d.id;} );
+			  	//.attr("fill", function(d) { return colorGroup(d.group); });
+			  
+			  var columnLabels = svg.append("g")
+		      	.selectAll(".columnLabel")
+		      	.data(graph.nodes)
+		      	.enter()
+		      	.append("text")
+		      	.text(function (d) { return d.nombre; })
+		      	.attr("x", cellSize)
+		      	.attr("y", text_span+ clusterRect + textLength + cellSize)
+				.style("text-anchor", "left")
+				.attr("transform", function (d, i) { return "translate(" + i*cellSize + "," + (textLength + cellSize*2) + ") rotate(-90)"; })
+			  	.attr("class", function (d,i) { return "columnLabel mono c" + i + " columnId_" + d.id;} );
+				//.attr("fill", function(d) { return colorGroup(d.group); });
+				
+			  var heatSquaresDown = svg.append("g")
+				.selectAll(".heatSquare")
+				.data(graph.links)
+				.enter()
+				.append("rect")
+		      	.attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.source) * cellSize; })
+		      	.attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.target) * cellSize; })
+				.attr("width", cellSize)
+        		.attr("height", cellSize)
+				.style("fill", function(d) { return colorScale(reps.indexOf(d.target), reps.indexOf(d.source), d.value); })
+				.attr("text", function(d) { return "From " + d.source + " to  " + d.target})
+				.attr("class", "heatSquare")
+  			  	.on("mouseover", function(d){
+					d3.select(".rowId_"+d.target).classed("selected", true);
+					d3.select(".columnId_"+d.source).classed("selected", true);					
+					showToolTip(d);
+  			  	})
+  			  	.on("mouseout", function(d){
+					d3.select(".rowId_"+d.target).classed("selected", false);
+					d3.select(".columnId_"+d.source).classed("selected", false);
+					d3.select("#squareTip").classed("hidden", true);
+					d3.select("#tooltip").classed("hidden", true);
+				});
+			  
+			  
+			  var heatSquaresUp = svg.append("g")
+				.selectAll(".heatSquare")
+				.data(graph.links)
+				.enter()
+				.append("rect")
+		      	.attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.target) * cellSize; })
+		      	.attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.source) * cellSize; })
+				.attr("width", cellSize)
+        		.attr("height", cellSize)
+				.style("fill", function(d) { return colorScale(reps.indexOf(d.target), reps.indexOf(d.source), d.value); })
+				.attr("text", function(d) { return "From " + d.target + " to  " + d.source})
+				.attr("class", "heatSquare")
+  			  	.on("mouseover", function(d){
+					d3.select(".rowId_"+d.source).classed("selected", true);
+					d3.select(".columnId_"+d.target).classed("selected", true);
+					showToolTip(d);
+  			  	})
+  			  	.on("mouseout", function(d){
+					d3.select(".rowId_"+d.source).classed("selected", false);
+					d3.select(".columnId_"+d.target).classed("selected", false);
+					d3.select("#squareTip").classed("hidden", true);
+					d3.select("#tooltip").classed("hidden", true);
+				});
+			  
+			  var heatSquaresDiagonal = svg.append("g")
+				.selectAll(".heatSquare")
+				.data(graph.nodes)
+				.enter()
+				.append("rect")
+		      	.attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.id) * cellSize; })
+		      	.attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.id) * cellSize; })
+				.attr("width", cellSize)
+        		.attr("height", cellSize)
+				.attr("class", "heatSquare")
+				.style("fill", function(d) { return colorScale(reps.indexOf(d.id), reps.indexOf(d.id), 1); });
+			  
+			  var clusterRectColumns = svg.append("g")
+				.selectAll(".clusterRect")
+				.data(graph.nodes)
+				.enter()
+				.append("rect")
+		      	.attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.id) * cellSize; })
+		      	.attr("y", function(d) { return textLength + cellSize + text_span })
+				.attr("width", cellSize)
+        		.attr("height", clusterRect)
+				.style("fill", function(d) { return colorGroup(d.group); })
+				.style("stroke-width", 0)
+			  
+			  var clusterRectRows = svg.append("g")
+				.selectAll(".clusterRect")
+				.data(graph.nodes)
+				.enter()
+				.append("rect")
+		      	.attr("x", function(d) { return textLength + text_span; })
+		      	.attr("y", function(d) { return text_span + clusterRect + cellSize + textLength + text_span  + reps.indexOf(d.id) * cellSize; })
+				.attr("width", clusterRect)
+        		.attr("height", cellSize)
+				.style("fill", function(d) { return colorGroup(d.group); })
+				.style("stroke-width", 0)
+			 
+		});
+		
+		var loadedClusters = false;
+		function loadClusters() {
+			if (loadedClusters) return;
+			loadedClusters = true;
+			$('#cluster-graph-container').html('<iframe style="width:100%;" src="http://localhost:3000/visualizations/votaciones.clusters.graph"></iframe>');
+		}
+
+		</script>
+	</body>
+</html>
