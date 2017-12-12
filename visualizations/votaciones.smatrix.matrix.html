@@ -215,7 +215,7 @@
 							Pasa el puntero para ver mas información
 						  </p>
 						  <hr class="my-4">
-						  <p>El cálculo se realizó analizando un total de 4.175 votaciones entre el año 2014 y 2018. Se dejaron fuera todas aquellas votaciones en las cuales todos los diputados asistentes votaron a favor</p>
+						  <p>El cálculo se realizó analizando un total de <strong style="color:#5bc0de;">4.175 </strong> votaciones entre el año <strong style="color:#5bc0de;">2014 y 2018</strong>. Se dejaron fuera todas aquellas votaciones en las cuales todos los diputados asistentes votaron a favor</p>
 						  <p class="lead">
 							<a href="javascript:" data-toggle="modal" data-target="#bloquesModal" class="btn btn-outline-info btn-block" role="button" onClick="loadClusters()">
 								Bloques de Diputados
@@ -381,7 +381,9 @@
 			clusterColors = ['#A0A4B8','#A3C4BC','#8DD17F','#7293A0','#AEDCC0','#D7B29D','#CB8589','#E8D2AE','#B5C2B7','#8C93A8'],
 			reps = [],
 			repsColors = [],
-			repsInfo = [];
+			repsInfo = [],
+			zoomed = false,
+			growth = 4;
 		
 		d3.select(".description-container").style("height",height + "px");
 		
@@ -442,6 +444,171 @@
 				  	.classed("hidden", false);				  
 			  }
 			  
+			  var getGroupClass = function(d) {
+				  var index_source = reps.indexOf(d.source),
+				  	source = repsInfo[index_source],
+				  	index_target = reps.indexOf(d.target),
+				  	target = repsInfo[index_target];
+					
+					if (index_source < index_target) return "group_" + (source.group + 1) + "_" + (target.group + 1);
+					return "group_" + (target.group + 1) + "_" + (source.group + 1);
+			  }
+			  
+			  var squareClicked = function(d) {
+				// Get the group
+				var group_target = repsInfo[reps.indexOf(d.target)].group;
+				var group_source = repsInfo[reps.indexOf(d.source)].group;
+				var group_str = getGroupClass(d);
+				zoomed = true;
+				
+				// Delete all squares except group ones
+				d3.selectAll("rect.heatSquare:not(." + group_str + ")")
+					.transition()
+					.attr("width", function(d2) { return 0; })
+					.attr("height", function(d2) { return 0; });
+				d3.selectAll("text.mono:not(." + group_str + ")")
+					.transition()
+					.attr("fill-opacity", function(d2) { return 0; });
+				d3.selectAll("rect.clusterRect:not(." + group_str + ")")
+					.transition()
+					.attr("width", function(d2) { return 0; })
+					.attr("height", function(d2) { return 0; });
+				
+				// Change sizes and positions
+				var counter = -1, counter_source = -1;
+				for (var i = 0; i < reps.length; i++) {
+					if (repsInfo[i].group === group_target && counter < 0) {
+						counter = i;
+					}
+					if (repsInfo[i].group === group_source && counter_source < 0) {
+						counter_source = i;
+					}
+				}
+				
+				// SQUARES
+				d3.selectAll("rect.heatSquare.down." + group_str + "")
+					.transition()
+					.attr("width", function(d2) { return cellSize*growth; })
+					.attr("height", function(d2) { return cellSize*growth; })
+					.attr("x", function(d2) { return textLength + text_span + clusterRect + text_span + (reps.indexOf(d2.source)-counter_source)*cellSize*growth; })
+					.attr("y", function(d2) { return textLength + text_span + clusterRect + text_span + (reps.indexOf(d2.target)-counter)*cellSize*growth + cellSize; });
+				
+				if (group_target === group_source) {
+					d3.selectAll("rect.heatSquare.diago." + group_str + "")
+					.transition()
+					.attr("width", function(d2) { return cellSize*growth; })
+					.attr("height", function(d2) { return cellSize*growth; })
+	      			.attr("x", function(d2, i2) { return textLength + text_span + clusterRect + text_span + i2*cellSize*growth; })
+	      			.attr("y", function(d2, i2) { return textLength + text_span + clusterRect + text_span + i2*cellSize*growth + cellSize; });
+				
+					d3.selectAll("rect.heatSquare.up." + group_str + "")
+					.transition()
+					.attr("width", function(d2) { return cellSize*growth; })
+					.attr("height", function(d2) { return cellSize*growth; })
+	      			.attr("x", function(d2) { return textLength + text_span + clusterRect + text_span + (reps.indexOf(d2.target)-counter_source)*cellSize*growth; })
+	      			.attr("y", function(d2) { return textLength + text_span + clusterRect + text_span + (reps.indexOf(d2.source)-counter)*cellSize*growth + cellSize; });
+				} 
+				else if (group_target > group_source) {
+					d3.selectAll("rect.heatSquare.diago")
+					.transition()
+					.attr("width", function(d2) { return 0; })
+					.attr("height", function(d2) { return 0; });
+				
+					d3.selectAll("rect.heatSquare.up")
+					.transition()
+					.attr("width", function(d2) { return 0; })
+					.attr("height", function(d2) { return 0; });
+				}
+				
+				// CLUSTER RECTS
+				if (group_target === group_source) {
+					d3.selectAll("rect.clusterRect.row." + group_str + "")
+					.transition()
+					.attr("height", function(d2) { return cellSize*growth; })
+					.attr("y", function(d2, i2) { return text_span + clusterRect + cellSize + textLength + text_span  + (i2)*cellSize*growth; });
+					d3.selectAll("rect.clusterRect.column." + group_str + "")
+					.transition()
+					.attr("width", function(d2) { return cellSize*growth; })
+	      			.attr("x", function(d2, i2) { return textLength + text_span + clusterRect + text_span + (i2)*cellSize*growth; });
+				}	
+				else if (group_target > group_source) {
+					d3.selectAll("rect.clusterRect.row.group_" + (group_target+1) + "_" + (group_target+1))
+					.transition()
+					.attr("height", function(d2) { return cellSize*growth; })
+					.attr("y", function(d2, i2) { return text_span + clusterRect + cellSize + textLength + text_span  + (i2)*cellSize*growth; });
+					d3.selectAll("rect.clusterRect.column.group_" + (group_source+1) + "_" + (group_source+1))
+					.transition()
+					.attr("width", function(d2) { return cellSize*growth; })
+	      			.attr("x", function(d2, i2) { return textLength + text_span + clusterRect + text_span + (i2)*cellSize*growth; });
+				}
+				
+				// TEXT LABELS
+				if (group_target === group_source) {
+					d3.selectAll("text.row." + group_str + "")
+					.transition()
+					.attr("y", function (d2, i2) { return text_span*2 + clusterRect + textLength + text_span + cellSize*1.5  + (i2) * cellSize*growth; });
+					d3.selectAll("text.column." + group_str + "")
+					.transition()
+					.attr("transform", function (d2, i2) { return "translate(" + i2*cellSize*growth + "," + (textLength + cellSize*2) + ") rotate(-90)"; });
+				}
+				else if (group_target > group_source) {
+					d3.selectAll("text.row.group_" + (group_target+1) + "_" + (group_target+1))
+					.transition()
+					.attr("fill-opacity", function(d) { return 1; })
+					.attr("y", function (d2, i2) { return text_span*2 + clusterRect + textLength + text_span + cellSize*1.5  + (i2) * cellSize*growth; });
+					
+					d3.selectAll("text.column.group_" + (group_source+1) + "_" + (group_source+1))
+					.transition()
+					.attr("fill-opacity", function(d) { return 1; })
+					.attr("transform", function (d2, i2) { return "translate(" + i2*cellSize*growth + "," + (textLength + cellSize*2) + ") rotate(-90)"; });
+				}
+			  }
+			  
+			  var backToNormal = function() {
+				  zoomed = false;
+				  
+				  d3.selectAll(".rowLabel")
+				  .attr("x", textLength)
+				  .attr("fill-opacity", function(d) { return 1; })
+				  .attr("y", function (d, i) { return text_span*2 + clusterRect + textLength + text_span + cellSize*1.5  + (i) * cellSize; });
+
+				  d3.selectAll(".columnLabel")
+				  .attr("x", cellSize)
+				  .attr("y", text_span+ clusterRect + textLength + cellSize)
+				  .attr("fill-opacity", function(d) { return 1; })
+				  .attr("transform", function (d, i) { return "translate(" + i*cellSize + "," + (textLength + cellSize*2) + ") rotate(-90)"; });
+				
+				  d3.selectAll(".heatSquare.down")
+				  .attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.source) * cellSize; })
+				  .attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.target) * cellSize; })
+				  .attr("width", cellSize)
+				  .attr("height", cellSize);
+			  
+				  d3.selectAll(".heatSquare.up")
+				  .attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.target) * cellSize; })
+				  .attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.source) * cellSize; })
+				  .attr("width", cellSize)
+				  .attr("height", cellSize);
+			  
+				  d3.selectAll(".heatSquare.diago")
+				  .attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.id) * cellSize; })
+				  .attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.id) * cellSize; })
+				  .attr("width", cellSize)
+				  .attr("height", cellSize);
+			  
+				  d3.selectAll(".clusterRect.column")
+				  .attr("x", function(d) { return text_span + clusterRect + textLength + text_span + reps.indexOf(d.id) * cellSize; })
+				  .attr("y", function(d) { return textLength + cellSize + text_span })
+				  .attr("width", cellSize)
+				  .attr("height", clusterRect);
+			  
+				  d3.selectAll(".clusterRect.row")
+				  .attr("x", function(d) { return textLength + text_span; })
+				  .attr("y", function(d) { return text_span + clusterRect + cellSize + textLength + text_span  + reps.indexOf(d.id) * cellSize; })
+				  .attr("width", clusterRect)
+				  .attr("height", cellSize);
+			  }
+			  
 			  for (var i = 0; i < graph.nodes.length; i++ ) {
 				  reps.push(graph.nodes[i].id);
 				  repsColors.push(colorGroup(graph.nodes[i].group));
@@ -457,9 +624,8 @@
 		      	.attr("x", textLength)
 		      	.attr("y", function (d, i) { return text_span*2 + clusterRect + textLength + text_span + cellSize*1.5  + (i) * cellSize; })
 		      	.style("text-anchor", "end")
-			  	.attr("class", function (d,i) { return "rowLabel mono r" + i + " rowId_" + d.id;} );
-			  	//.attr("fill", function(d) { return colorGroup(d.group); });
-			  
+			  	.attr("class", function (d,i) { return "rowLabel mono row r" + i + " rowId_" + d.id +  " group_" + (d.group+1) + "_" + (d.group+1); } );
+
 			  var columnLabels = svg.append("g")
 		      	.selectAll(".columnLabel")
 		      	.data(graph.nodes)
@@ -470,8 +636,7 @@
 		      	.attr("y", text_span+ clusterRect + textLength + cellSize)
 				.style("text-anchor", "left")
 				.attr("transform", function (d, i) { return "translate(" + i*cellSize + "," + (textLength + cellSize*2) + ") rotate(-90)"; })
-			  	.attr("class", function (d,i) { return "columnLabel mono c" + i + " columnId_" + d.id;} );
-				//.attr("fill", function(d) { return colorGroup(d.group); });
+			  	.attr("class", function (d,i) { return "columnLabel mono column c" + i + " columnId_" + d.id +  " group_" + (d.group+1) + "_" + (d.group+1);} );
 				
 			  var heatSquaresDown = svg.append("g")
 				.selectAll(".heatSquare")
@@ -484,19 +649,23 @@
         		.attr("height", cellSize)
 				.style("fill", function(d) { return colorScale(reps.indexOf(d.target), reps.indexOf(d.source), d.value); })
 				.attr("text", function(d) { return "From " + d.source + " to  " + d.target})
-				.attr("class", "heatSquare")
+				.attr("class", function (d,i) {  return "heatSquare down " + getGroupClass(d); })
   			  	.on("mouseover", function(d){
 					d3.select(".rowId_"+d.target).classed("selected", true);
 					d3.select(".columnId_"+d.source).classed("selected", true);					
 					showToolTip(d);
   			  	})
   			  	.on("mouseout", function(d){
-					d3.select(".rowId_"+d.target).classed("selected", false);
+					d3.select(".rowId_" + d.target).classed("selected", false);
 					d3.select(".columnId_"+d.source).classed("selected", false);
 					d3.select("#squareTip").classed("hidden", true);
 					d3.select("#tooltip").classed("hidden", true);
+				})
+  			  	.on("click", function(d){
+					// if (repsInfo[reps.indexOf(d.target)].group !== repsInfo[reps.indexOf(d.source)].group) return;
+					if (zoomed) { backToNormal(); return; }
+					squareClicked(d);
 				});
-			  
 			  
 			  var heatSquaresUp = svg.append("g")
 				.selectAll(".heatSquare")
@@ -509,7 +678,7 @@
         		.attr("height", cellSize)
 				.style("fill", function(d) { return colorScale(reps.indexOf(d.target), reps.indexOf(d.source), d.value); })
 				.attr("text", function(d) { return "From " + d.target + " to  " + d.source})
-				.attr("class", "heatSquare")
+				.attr("class", function (d,i) {  return "heatSquare up " + getGroupClass(d); })
   			  	.on("mouseover", function(d){
 					d3.select(".rowId_"+d.source).classed("selected", true);
 					d3.select(".columnId_"+d.target).classed("selected", true);
@@ -520,6 +689,11 @@
 					d3.select(".columnId_"+d.target).classed("selected", false);
 					d3.select("#squareTip").classed("hidden", true);
 					d3.select("#tooltip").classed("hidden", true);
+				})
+  			  	.on("click", function(d){
+					// if (repsInfo[reps.indexOf(d.target)].group !== repsInfo[reps.indexOf(d.source)].group) return;
+					if (zoomed) { backToNormal(); return; }
+					squareClicked(d);
 				});
 			  
 			  var heatSquaresDiagonal = svg.append("g")
@@ -531,7 +705,7 @@
 		      	.attr("y", function(d) { return text_span + clusterRect + textLength + cellSize + text_span + reps.indexOf(d.id) * cellSize; })
 				.attr("width", cellSize)
         		.attr("height", cellSize)
-				.attr("class", "heatSquare")
+				.attr("class", function (d,i) {  return "heatSquare diago " + "group_" + (d.group+1) + "_" + (d.group+1); })
 				.style("fill", function(d) { return colorScale(reps.indexOf(d.id), reps.indexOf(d.id), 1); });
 			  
 			  var clusterRectColumns = svg.append("g")
@@ -545,6 +719,7 @@
         		.attr("height", clusterRect)
 				.style("fill", function(d) { return colorGroup(d.group); })
 				.style("stroke-width", 0)
+				.attr("class", function (d,i) {  return "clusterRect column " + "group_" + (d.group+1) + "_" + (d.group+1); });
 			  
 			  var clusterRectRows = svg.append("g")
 				.selectAll(".clusterRect")
@@ -557,6 +732,7 @@
         		.attr("height", cellSize)
 				.style("fill", function(d) { return colorGroup(d.group); })
 				.style("stroke-width", 0)
+				.attr("class", function (d,i) {  return "clusterRect row " + "group_" + (d.group+1) + "_" + (d.group+1); });
 			 
 		});
 		
