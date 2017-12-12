@@ -36,18 +36,26 @@ d3.json("./public/data/graph.votaciones.json", function(error, graph) {
 	  //return d3.scalePow().domain([0, 1]).range(["#fff",d3.interpolateLab(repsColors[row], repsColors[column])(0.5)])(val);
   }
 
-  var showToolTip = function(d) {
-  				  
+  var showToolTip = function(d, element) {  				  
 	  var index_source = reps.indexOf(d.source),
 	  source = repsInfo[index_source],
 	  index_target = reps.indexOf(d.target),
 	  target = repsInfo[index_target],
 	  color_source = repsColors[index_source],
 	  color_target = repsColors[index_target],
-	  tool_pos_x = ((d3.event.pageX > width - toolTipSize) ? (d3.event.pageX - toolTipSize - squareTipSize) : (d3.event.pageX + squareTipSize)),
-	  tool_pos_y = ((d3.event.pageY > height - toolTipSize) ? (d3.event.pageY - toolTipSize/2) : (d3.event.pageY - squareTipSize)),
+	  square_x = element.getAttribute("x")*1,
+	  square_y = element.getAttribute("y")*1,
+	  //tool_pos_x = ((d3.event.pageX > width - toolTipSize) ? (d3.event.pageX - toolTipSize - squareTipSize) : (d3.event.pageX + squareTipSize)),
+	  //tool_pos_y = ((d3.event.pageY > height - toolTipSize) ? (d3.event.pageY - toolTipSize/2) : (d3.event.pageY - squareTipSize)),
+	  
+	  tool_pos_x = ((square_x > width - toolTipSize) ? (square_x - toolTipSize - squareTipSize*0.5) : (square_x + squareTipSize*1.5)),
+	  tool_pos_y = ((square_y > height - toolTipSize) ? (square_y - toolTipSize/2) : (square_y + squareTipSize)),
+	  
+	  circle_pos_x = square_x + (zoomed ? growth : 1)*cellSize/2 + 0.5*squareTipSize/2;
+	  circle_pos_y = square_y - 0.5*squareTipSize/2 + (zoomed ? growth : 1)*cellSize/2;
+	  
 	  match_color = d3.scaleLinear().domain([0, 1]).range(["red","green"])(d.value);
-  
+    
 	  var selection = d3.select("#tooltip")
 	  .style("left", tool_pos_x + "px")
 	  .style("top", tool_pos_y + "px");
@@ -68,8 +76,8 @@ d3.json("./public/data/graph.votaciones.json", function(error, graph) {
 	  selection.classed("hidden", false);
   
 	  d3.select("#squareTip")
-	  .style("left", (d3.event.pageX) - squareTipSize/2 + "px")
-	  .style("top", (d3.event.pageY) - squareTipSize/2 + "px")
+	  .style("left", circle_pos_x + "px")
+	  .style("top", circle_pos_y + "px")
 	  .style("background-color", colorScale(index_target, index_source, d.value))
 	  .classed("hidden", false);				  
   }
@@ -283,7 +291,7 @@ d3.json("./public/data/graph.votaciones.json", function(error, graph) {
   .on("mouseover", function(d){
 	  d3.select(".rowId_"+d.target).classed("selected", true);
 	  d3.select(".columnId_"+d.source).classed("selected", true);					
-	  showToolTip(d);
+	  showToolTip(d, this);
   })
   .on("mouseout", function(d){
 	  d3.select(".rowId_" + d.target).classed("selected", false);
@@ -312,7 +320,7 @@ d3.json("./public/data/graph.votaciones.json", function(error, graph) {
   .on("mouseover", function(d){
 	  d3.select(".rowId_"+d.source).classed("selected", true);
 	  d3.select(".columnId_"+d.target).classed("selected", true);
-	  showToolTip(d);
+	  showToolTip(d, this);
   })
   .on("mouseout", function(d){
 	  d3.select(".rowId_"+d.source).classed("selected", false);
@@ -372,5 +380,10 @@ var loadedClusters = false;
 function loadClusters() {
   if (loadedClusters) return;
   loadedClusters = true;
-  $('#cluster-graph-container').html('<iframe style="width:100%;" src="http://bloques.votoenbloque.cl.s3-website-us-east-1.amazonaws.com/"></iframe>');
+  $('#cluster-graph-container').html('<iframe style="width:100%;" src="http://bloques.votoenbloque.cl/"></iframe>');
+}
+
+// Mobile alert
+if (window.innerWidth < 500) {
+	$('#mobileModal').modal('show');
 }
