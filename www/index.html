@@ -18,38 +18,237 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="felipeares">
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-	<title>La Cámara</title>
+	<title>Voto en Bloque</title>
 	<!-- Search Engine -->
-	<meta name="description" content="">
+	<meta name="description" content="¿Cómo votan nuestros Diputados? Una visualización que da cuenta de los distintos bloques que operan en la cámara baja.">
 	<meta name="image" content="">
 	<!-- Schema.org for Google -->
-	<meta itemprop="name" content="La Cámara">
-	<meta itemprop="description" content="">
-	<meta itemprop="image" content="">
+	<meta itemprop="name" content="Voto en Bloque">
+	<meta itemprop="description" content="¿Cómo votan nuestros Diputados? Una visualización que da cuenta de los distintos bloques que operan en la cámara baja.">
+	<meta itemprop="image" content="http://votoenbloque.cl/public/social/site_image.jpg">
 	<!-- Twitter -->
 	<meta name="twitter:card" content="summary">
-	<meta name="twitter:title" content="La Cámara">
-	<meta name="twitter:description" content="">
+	<meta name="twitter:title" content="Voto en Bloque">
+	<meta name="twitter:description" content="¿Cómo votan nuestros Diputados? Una visualización que da cuenta de los distintos bloques que operan en la cámara baja.">
 	<meta name="twitter:site" content="@Felipe_Ares">
 	<meta name="twitter:creator" content="@Felipe_Ares">
-	<meta name="twitter:image:src" content="">
+	<meta name="twitter:image:src" content="http://votoenbloque.cl/public/social/twitter1024x512.jpg">
 	<!-- Open Graph general (Facebook, Pinterest & Google+) -->
-	<meta property="og:title" content="La Cámara">
-	<meta property="og:description" content="">
-	<meta property="og:image" content="">
-	<meta property="og:url" content="">
-	<meta property="og:site_name" content="La Cámara">
+	<meta property="og:title" content="Voto en Bloque">
+	<meta property="og:description" content="¿Cómo votan nuestros Diputados? Una visualización que da cuenta de los distintos bloques que operan en la cámara baja.">
+	<meta property="og:image" content="http://votoenbloque.cl/public/social/og1200x630.jpg">
+	<meta property="og:url" content="http://votoenbloque.cl">
+	<meta property="og:site_name" content="Voto en Bloque">
 	<meta property="og:locale" content="es_cl">
 	<meta property="og:type" content="website">
 
 	
 	<!-- Custom styles for this project -->
-	<link href="public/css/style.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" 
+	      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" 
+		  integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" 
+		  crossorigin="anonymous">
+	<link href="public/css/style.css" rel="stylesheet" type="text/css">
 
   </head>
 
   <body>
-	  MAIN
-  </body>
+	  <div class="container-fluid main">
+		  <div class="row">
+			  <div class="col-sm-8" style="overflow: auto;">
+				  <div class="graph-container">
+					  <div id="tooltip" class="hidden">
+						  <div class="reps">
+							  <div id="rep_1" class="rep">
+								  <p></p>
+								  <span class="par"></span>
+								  <span class="bloc"></span>
+							  </div>
+							  <div id="rep_2" class="rep">
+								  <p></p>
+								  <span class="par"></span>
+								  <span class="bloc"></span>
+							  </div>
+						  </div>
+						  <div class="simil">
+							  <div class="speed">
+								  <p id="match"></p>
+								  <span>match</span>
+							  </div>
+						  </div>
+					  </div>
+					  <div id="squareTip" class="hidden"></div>
+					  <div id="chart">
+						  <div id="prev-loader" class="loader"><i class="fa fa-cogs" aria-hidden="true"></i></div>
+					  </div>
+				  </div>
+				
+			  </div>
+			  <div class="col-sm-4">
+				  <div class="description-container">
+					  <div class="jumbotron">
+						  <h1 class="display-3">¡Hola!</h1>
+						  <p class="lead">
+							  La siguiente matriz da cuenta de que tan parecido votan los diputados de Chile. Entre más "oscuro" esté el color de la celda entre dos diputados más parecidos son.
+							  ¡Pasa el puntero para ver más información!
+						  </p>
+						  <hr class="my-4">
+						  <p>
+							  El cálculo se realizó analizando un total de <strong style="color:#5bc0de;">4.175 </strong> votaciones entre el año <strong style="color:#5bc0de;">2014 y 2017</strong>. 
+							  Te dejamos pintados del mismo color los 10 Bloques más característicos que encontramos.
+						  </p>
+						  <p class="lead">
+							  <a href="javascript:" data-toggle="modal" data-target="#bloquesModal" class="btn btn-outline-info btn-block" role="button" onClick="loadClusters()">
+								  Bloques de Diputados
+							  </a>
+							  <a href="javascript:" data-toggle="modal" data-target="#comoModal" class="btn btn-outline-info btn-block" role="button">
+								  ¿Cómo se armó?
+							  </a>
+							  <a href="javascript:" data-toggle="modal" data-target="#contactoModal" class="btn btn-outline-info btn-block" role="button">
+								  Contacto
+							  </a>
+							  <a href="https://github.com/felipeares/la-camara" class="btn btn-outline-info btn-block" role="button">
+								  <i class="fa fa-github" aria-hidden="true"></i> Código en GitHub
+							  </a>
+						  </p>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		
+		
+		  <!-- Bloques Modal -->
+		  <div class="modal fade" id="bloquesModal" tabindex="-1" role="dialog" aria-labelledby="bloquesModalTitle" aria-hidden="true">
+			  <div class="modal-dialog modal-lg" role="document">
+				  <div class="modal-content">
+					  <div class="modal-header">
+						  <h5 class="modal-title" id="exampleModalLongTitle">¿Cómo están ordenados los Bloques?</h5>
+						  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true">&times;</span>
+						  </button>
+					  </div>
+					  <div class="modal-body">
+						  <p>
+							  Los bloques se ordenaron intentando juntar a aquellos diputados más similares unos con otros. 
+							  No necesariamente quedaron en cada bloque diputados del mismo partido. 
+							  A continuación, te dejamos el detalle de la composición de cada uno.
+							  Pasa el puntero por los círculos para que partidos o que diputados lo componen.
+						  </p>
+						  <div id="cluster-graph-container"></div>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		
+		  <!-- HowTo Modal -->
+		  <div class="modal fade" id="comoModal" tabindex="-1" role="dialog" aria-labelledby="comoModalTitle" aria-hidden="true">
+			  <div class="modal-dialog modal-lg" role="document">
+				  <div class="modal-content">
+					  <div class="modal-header">
+						  <h5 class="modal-title" id="exampleModalLongTitle">¿Cómo se armó?</h5>
+						  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true">&times;</span>
+						  </button>
+					  </div>
+					  <div class="modal-body">
+						  <div class="row">
+							  <div class="col-sm-12">
+								  <h3>Obtención de Datos</h3>
+								  <p>
+									  Los datos se obtuvieron construyendo un "Crawler" que se dedicó durante un poco más de 5 horas a obtener absolutamente TODOS los datos de la página web pública de la cámara de diputados (https://www.camara.cl/.)
+									  Finalmente se logró descargar el detalle del voto de cada diputado de 4.175 votaciones durante el período 2014-2018. Puedes ver el código de los "scrapers" en el repositorio abierto vinculado al inicio de esta página.
+								  </p>
+							  </div>
+						  </div>
+						  <div class="row">
+							  <div class="col-sm-12">
+								  <h3>Construcción de la Matriz</h3>
+								  <p>
+									  Se construyó un algoritmo que fue sumando en una matriz de 120X120 (número de diputados) +1 cada vez que un diputado i votara exactamente igual que un diputado j.
+									  Además, se castigaba dicha celda con -1 si es que el diputado i votó a favor y el diputado j en contra (O vice versa).
+									  Con esto quedamos con una matriz con muchos números.
+								  </p>
+							  </div>
+						  </div>
+						  <div class="row">
+							  <div class="col-sm-12">
+								  <h3>Suavización y Orden</h3>
+								  <p>
+									  Finalmente se suavizó la matriz por columna con una función lineal que dejará en uno el máximo de la columna.
+									  Para ordenar la matriz primero se realizó un proceso de "K-Means" para encontrar clusters de similitud entre los diputados.
+								  </p>
+							  </div>
+						  </div>
+						  <div class="row">
+							  <div class="col-sm-12">
+								  <h3>Principales Librerías Utilizadas</h3>
+								  <p>
+									  Se utilizaron las siguientes librerías en el desarrollo de la Matriz
+								  </p>
+								  <ul>
+									  <li><h4>Web Scraping</h4></li>
+									  <li>Selenium (Python)</li>
+							
+									  <li><h4 style="margin-top:10px;">Data Analytics</h4></li>
+									  <li>Numpy (Python)</li>
+									  <li>sklearn (Python)</li>
+									  <li>matplotlib (Python)</li>
+							
+									  <li><h4 style="margin-top:10px;">Visualización</h4></li>
+									  <li>D3.js (Javascript)</li>
+							
+									  <li><h4 style="margin-top:10px;">Página Web</h4></li>
+									  <li>Bootstrap (CSS + Javascript)</li>
+									  <li>JQuery (Javascript)</li>
+									  <li>Font Awesome (CSS)</li>
+								  </ul>
+							  </div>
+						  </div>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		
+		  <!-- Contact Modal -->
+		  <div class="modal fade" id="contactoModal" tabindex="-1" role="dialog" aria-labelledby="contactoModalTitle" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+				  <div class="modal-content">
+					  <div class="modal-header">
+						  <h5 class="modal-title" id="exampleModalLongTitle"><i class="fa fa-paper-plane-o" aria-hidden="true"></i> Contacto</h5>
+						  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true">&times;</span>
+						  </button>
+					  </div>
+					  <div class="modal-body">
+						  <p>Si tienes alguna idea de otros proyectos que pudiésemos hacer con esta información, o te interesaría obtener la base de datos que estamos generando o simplemente quieres conversar envíame un correo a <strong>felipeares.work<i class="fa fa-at"></i>gmail<i class="fa fa-dot">.</i>com</strong></p>
+						  <p>Estoy buscando nuevas ideas/proyectos que podamos hacer levantando información de la web (Scraping), construyendo modelos analíticos/predictivos y visualizándolos de manera simple e interactiva.</p>
+						  <ul id="felipe-info">
+							  <li><i class="fa fa-github-square"></i> <a href="https://github.com/felipeares">github.com/felipeares</a></li>
+							  <li><i class="fa fa-linkedin-square"></i> <a href="https://www.linkedin.com/in/felipeares/">linkedin.com/in/felipeares/</a></li>
+						  </ul>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+					
+	  </div>
+	
+	  <script
+	  src="https://code.jquery.com/jquery-3.2.1.min.js"
+	  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	  crossorigin="anonymous"></script>
+	  <script 
+	  src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" 
+	  integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" 
+	  crossorigin="anonymous"></script>
+	  <script 
+	  src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" 
+	  integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" 
+	  crossorigin="anonymous"></script>
+	  <script src="https://d3js.org/d3.v4.min.js"></script>
+	  
+	  <script src="public/js/main.js"></script>
+	  </body>
 
 </html>

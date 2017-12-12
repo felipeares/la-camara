@@ -6,7 +6,8 @@
   "scripts": {
     "test": "",
 	"start": "node index.js",
-	"deploy": "aws s3 sync ./www/dist/ s3://lacamara.cl/ --exclude '*.DS_Store'"
+	"deploy": "aws s3 sync ./www/ s3://votoenbloque.cl/ --exclude '*.DS_Store'",
+	"deploy-grafos": "aws s3 sync ./visualizations/ s3://bloques.votoenbloque.cl/ --exclude '*.DS_Store'"
   },
   "repository": {
     "type": "git",

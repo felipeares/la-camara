@@ -211,11 +211,14 @@
 						<div class="jumbotron">
 						  <h1 class="display-3">¡Hola!</h1>
 						  <p class="lead">
-						  	La siguiente matriz da cuenta de que tan parecido votan los diputados de Chile. Entre más "oscurecido" esté el color de la celda entre dos diputados más parecidos son.
-							Pasa el puntero para ver mas información
+						  	La siguiente matriz da cuenta de que tan parecido votan los diputados de Chile. Entre más "oscuro" esté el color de la celda entre dos diputados más parecidos son.
+							¡Pasa el puntero para ver mas información!
 						  </p>
 						  <hr class="my-4">
-						  <p>El cálculo se realizó analizando un total de <strong style="color:#5bc0de;">4.175 </strong> votaciones entre el año <strong style="color:#5bc0de;">2014 y 2018</strong>. Se dejaron fuera todas aquellas votaciones en las cuales todos los diputados asistentes votaron a favor</p>
+						  <p>
+							  El cálculo se realizó analizando un total de <strong style="color:#5bc0de;">4.175 </strong> votaciones entre el año <strong style="color:#5bc0de;">2014 y 2017</strong>. 
+							  Te dejamos pintados del mismo color los 10 Bloques mas característicos que encontramos.
+						  </p>
 						  <p class="lead">
 							<a href="javascript:" data-toggle="modal" data-target="#bloquesModal" class="btn btn-outline-info btn-block" role="button" onClick="loadClusters()">
 								Bloques de Diputados
@@ -402,8 +405,8 @@
 			  
 			  var colorScale = function(row,column,val) {
 				  if (repsColors[row] === repsColors[column]) return d3.scaleLinear().domain([0, 1]).range(["#fff",repsColors[row]])(val);
-				  //return d3.scaleLinear().domain([0, 1]).range(["#fff","#ddd"])(val); 
-				  return d3.scalePow().domain([0, 1]).range(["#fff",d3.interpolateLab(repsColors[row], repsColors[column])(0.5)])(val);
+				  return d3.scaleLinear().domain([0, 1]).range(["#fff","#ddd"])(val); 
+				  //return d3.scalePow().domain([0, 1]).range(["#fff",d3.interpolateLab(repsColors[row], repsColors[column])(0.5)])(val);
 			  }
 			  
 			  var showToolTip = function(d) {
@@ -736,6 +739,8 @@
 			 
 		});
 		
+		
+		// Cluster Loading
 		var loadedClusters = false;
 		function loadClusters() {
 			if (loadedClusters) return;
