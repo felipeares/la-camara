@@ -380,7 +380,7 @@ var loadedClusters = false;
 function loadClusters() {
   if (loadedClusters) return;
   loadedClusters = true;
-  $('#cluster-graph-container').html('<iframe style="width:100%;" src="http://bloques.votoenbloque.cl/"></iframe>');
+  $('#cluster-graph-container').html('<iframe style="width:100%;" src="https://bloques.felipeares.info/"></iframe>');
 }
 
 // Mobile alert
